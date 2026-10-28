@@ -2,10 +2,13 @@ package org.example.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.entities.UserInfo;
+import org.example.eventProducer.UserInfoProducer;
 import org.example.model.UserInfoDto;
+import org.example.model.UserInfoEvent;
 import org.example.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,6 +25,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private final UserInfoProducer userInfoProducer;
+
 
     private static final Logger log = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
@@ -55,6 +62,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         userInfoDto.setUserId(userId);
         UserInfo userInfo = new UserInfo(userId, userInfoDto.getUsername(), userInfoDto.getPassword(), new HashSet<>());
         userRepository.save(userInfo);
+        // pushEventToQueue
+        userInfoProducer.sendEventToKafka(userInfoEventToPublished(userInfoDto));
         return true;
     }
+
+    private UserInfoEvent userInfoEventToPublished(UserInfoDto userInfoDto){
+        return UserInfoEvent.builder()
+                .userId(userInfoDto.getUserId())
+                .firstName(userInfoDto.getFirstName())
+                .lastName(userInfoDto.getLastName())
+                .email(userInfoDto.getEmail())
+                .phoneNumber(userInfoDto.getPhoneNumber())
+                .build();
+    }
+
 }

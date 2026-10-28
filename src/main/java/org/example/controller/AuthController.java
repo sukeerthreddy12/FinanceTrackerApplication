@@ -40,7 +40,6 @@ public class AuthController {
             return new ResponseEntity<>(JwtResponseDTO
                     .builder()
                     .username(userInfoDto.getUsername())
-                    .password(userInfoDto.getPassword())
                     .accessToken(jwtToken)
                     .token(refreshToken.getToken())
                     .build(), HttpStatus.OK);

@@ -44,6 +44,14 @@ dependencies {
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    implementation 'org.springframework.kafka:spring-kafka'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // JDK 23+ does not run annotation processors unless this is set.
+    // Without it, Lombok never generates getters, setters, or builders.
+    options.compilerArgs.add("-proc:full")
 }
 
 tasks.named('test') {
